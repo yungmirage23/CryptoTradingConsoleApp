@@ -13,7 +13,7 @@ namespace ConsoleCrypto.Services
         CancellationTokenSource cancellationTokenSource2 = new CancellationTokenSource();
         CancellationToken tokenStream=new CancellationToken();
 
-        private List<ITradeble> _tradebles=new List<ITradeble>();
+        private List<ITradeble> tradebles;
         private readonly Uri StonksUri = new Uri("wss://fstream.binance.com/ws");
         //wss://fstream.binance.com/ws
         //wss://stream.binancefuture.com/ws
@@ -23,13 +23,15 @@ namespace ConsoleCrypto.Services
         public event RecievedEventHandler onMessageReceived;
 
 
-        public WebSocketManager()
+        public WebSocketManager(List<ITradeble> _tradebles)
         {
             tokenCoin = cancellationTokenSource.Token;
             tokenStream = cancellationTokenSource2.Token;
+            tradebles = _tradebles;
+            
         }
 
-        public async Task Start()
+        public async Task ConnectToWebSocket()
         {
             Client = new ClientWebSocket();
             onMessageReceived += WriteStreamMessage;
@@ -41,7 +43,7 @@ namespace ConsoleCrypto.Services
         {
             try
             {
-                _tradebles.Add(coin);
+                tradebles.Add(coin);
                 var reqstring = coin.Name + coin.Method;
                 var request = new RequestWebSocket();
                 request.param.Add(reqstring);
@@ -65,11 +67,11 @@ namespace ConsoleCrypto.Services
                 var stringText = JsonConvert.SerializeObject(request);
                 request=null;
                 await Client.SendAsync(Encoding.UTF8.GetBytes(stringText),WebSocketMessageType.Text,true, tokenCoin);
-                if (_tradebles.Count == 1)
+                if (tradebles.Count == 1)
                 {
                     cancellationTokenSource2.Cancel();
                     cancellationTokenSource.Cancel();
-                    _tradebles = null;
+                    tradebles = null;
                     onMessageReceived -= WriteStreamMessage;
                     onMessageReceived = null ;
                     Client.Dispose();
@@ -94,7 +96,7 @@ namespace ConsoleCrypto.Services
                 var resultObject = JsonConvert.DeserializeObject<MiniTicker>(resultString);
                 if (resultObject.EventType != null)
                 {
-                    var stream = _tradebles.First(x => x.Name.ToLower() == resultObject.Symbol.ToLower());
+                    var stream = tradebles.First(x => x.Name.ToLower() == resultObject.Symbol.ToLower());
                     stream.tickerStreamsQueue.Push(resultObject);
                     onMessageReceived(stream.tickerStreamsQueue);
                 }

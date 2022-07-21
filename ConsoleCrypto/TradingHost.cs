@@ -12,7 +12,6 @@ internal class TradingHost
     private Coin XRPUSDT = new Coin("XRPUSDT", "@miniTicker");
     private Coin FTMUSDT = new Coin("FTMUSDT", "@miniTicker");
     private List<ITradeble> tradebles = new List<ITradeble>();
-
     private List<ITradeble> fakeTradablesList = new List<ITradeble>();
 
     public TradingHost()
@@ -28,24 +27,17 @@ internal class TradingHost
     public async Task StartCoinTrading(ITradeble coin)
     {
         var snapshotKliens = await RequestKlinesSnapshot.RequestData(coin.Name, "1m");
-        if (snapshotKliens != null)
+
+        if (webSocketManager == null)
         {
-            if (tradebles.Count == 0)
-            {
-                ConsoleEx.Log("Host started");
-                ConsoleEx.Log("WebSocketManager started");
-                webSocketManager = new WebSocketManager();
-                await webSocketManager.Start();
-            }
-            coin.coinKlines = snapshotKliens;
-            tradebles.Add(coin);
-            ConsoleEx.Log("API DATA delivered");
-            webSocketManager.SubscribeCoinStreamAsync(coin);
+            ConsoleEx.Log("Host started");
+            ConsoleEx.Log("WebSocketManager started");
+            webSocketManager = new WebSocketManager(tradebles);
+            await webSocketManager.ConnectToWebSocket();
         }
-        else
-        {
-            ConsoleEx.Log("ERROR api data not delivered");
-        }
+        coin.coinKlines = snapshotKliens;
+        ConsoleEx.Log("API DATA delivered");
+        webSocketManager.SubscribeCoinStreamAsync(coin);
     }
 
     public async Task FinishCoinTrading(ITradeble coin)
@@ -57,7 +49,6 @@ internal class TradingHost
             tradebles.Clear();
         }
         else tradebles.Remove(coin);
-
         coin = null;
     }
 
