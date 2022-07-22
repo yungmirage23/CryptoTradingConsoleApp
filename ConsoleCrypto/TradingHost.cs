@@ -1,33 +1,20 @@
 ﻿using ConsoleCrypto.Models.Cryptocurrency;
+using ConsoleCrypto.Models.Cryptocurrency.Coins;
 using ConsoleCrypto.Services;
 using ConsoleCrypto.Services.API;
 
-internal class TradingHost
+internal sealed class TradingHost
 {
     private WebSocketManager webSocketManager;
-    private Coin BTCUSDT = new Coin("BTCUSDT", "@miniTicker");
-    private Coin ETHUSDT = new Coin("ETHUSDT", "@miniTicker");
-    private Coin DOGEUSDT = new Coin("DOGEUSDT", "@miniTicker");
-    private Coin LTCUSDT = new Coin("LTCUSDT", "@miniTicker");
-    private Coin XRPUSDT = new Coin("XRPUSDT", "@miniTicker");
-    private Coin FTMUSDT = new Coin("FTMUSDT", "@miniTicker");
-    private List<ITradeble> tradebles = new List<ITradeble>();
-    private List<ITradeble> fakeTradablesList = new List<ITradeble>();
+    
+    private List<Tradeble> tradebles = new List<Tradeble>();
+    FakeCoinsList fake =new FakeCoinsList();
 
-    public TradingHost()
-    {
-        fakeTradablesList.Add(BTCUSDT);
-        fakeTradablesList.Add(ETHUSDT);
-        fakeTradablesList.Add(DOGEUSDT);
-        fakeTradablesList.Add(FTMUSDT);
-        fakeTradablesList.Add(XRPUSDT);
-        fakeTradablesList.Add(LTCUSDT);
-    }
-
-    public async Task StartCoinTrading(ITradeble coin)
+    public async Task StartCoinTrading(Tradeble coin)
     {
         var snapshotKliens = await RequestKlinesSnapshot.RequestData(coin.Name, "1m");
-
+        coin.coinKlines = snapshotKliens;
+        snapshotKliens = null;
         if (webSocketManager == null)
         {
             ConsoleEx.Log("Host started");
@@ -35,12 +22,11 @@ internal class TradingHost
             webSocketManager = new WebSocketManager(tradebles);
             await webSocketManager.ConnectToWebSocket();
         }
-        coin.coinKlines = snapshotKliens;
         ConsoleEx.Log("API DATA delivered");
         webSocketManager.SubscribeCoinStreamAsync(coin);
     }
 
-    public async Task FinishCoinTrading(ITradeble coin)
+    public async Task FinishCoinTrading(Tradeble coin)
     {
         await webSocketManager.UnSubscribeCoinStream(coin);
         if (tradebles.Count == 1)
@@ -73,8 +59,8 @@ internal class TradingHost
                     break;
 
                 case 'e':
-                    var coinfake = fakeTradablesList[i];
-                    if (i != fakeTradablesList.Count - 1)
+                    var coinfake = fake.fakeTradablesList[i];
+                    if (i != fake.fakeTradablesList.Count - 1)
                     {
                         await StartCoinTrading(coinfake);
                         ConsoleEx.Log($"Coin {coinfake.Name} has been added");
@@ -88,73 +74,4 @@ internal class TradingHost
             }
         }
     }
-
-    public void Exit()
-    {
-    }
 }
-
-//class TradingController
-//{
-//    List<ITradebl> Coens;
-//    public TradingController(List<ITradebl> _coens)
-//    {
-//        Coens = _coens;
-//    }
-//    public void SubscribeToStreams()
-//    {
-//        foreach(var coen in Coens)
-//        {
-//            ConsoleEx.Log($"{coen.Name} stream subscribed");
-//        }
-//    }
-//}
-//interface ITradebl
-//{
-//    public string Name { get; set; }
-//    public void MakeSnapshot();
-//    public void StartStrategy();
-//}
-//class Coen:ITradebl
-//{
-//    public IStratagy Stratagy;
-//    public string Name { get; set; }
-//    public string Method { get; set; }
-//    List<KlineAPI> coens;
-//    public Coen(string _name,string _method,IStratagy _stratagy)
-//    {
-//        Name = _name;
-//        Method = _method;
-//        Stratagy = _stratagy;
-//    }
-//    public void MakeSnapshot()
-//    {
-//        ConsoleEx.Log($"Coin:{Name} Strategy:{Stratagy.Name} snapshot made");
-//    }
-//    public void StartStrategy()
-//    {
-//        Stratagy.LoadStrategy();
-//    }
-
-//}
-//interface IStratagy
-//{
-//    public string Name { get; }
-//    public void LoadStrategy();
-//}
-//class LevelsStratagy : IStratagy
-//{
-//    public string Name{ get { return "LevelsStrategy"; } }
-//    public void LoadStrategy()
-//    {
-//        ConsoleEx.Log("LevelsStrategyStarted");
-//    }
-//}
-//class FastTrade : IStratagy
-//{
-//    public string Name { get { return "FastTrade"; } }
-//    public void LoadStrategy()
-//    {
-//        ConsoleEx.Log("FastStrategyStarted");
-//    }
-//}

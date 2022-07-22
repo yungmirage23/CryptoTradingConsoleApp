@@ -3,32 +3,28 @@ using ConsoleCrypto.Services.WebSockets;
 using Newtonsoft.Json;
 using System.Net.WebSockets;
 using System.Text;
-
+//wss://fstream.binance.com/ws
+//wss://stream.binancefuture.com/ws
 namespace ConsoleCrypto.Services
 {
-    public class WebSocketManager
+    class WebSocketManager
     {
-        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        CancellationToken tokenCoin = new CancellationToken();
-        CancellationTokenSource cancellationTokenSource2 = new CancellationTokenSource();
-        CancellationToken tokenStream=new CancellationToken();
+        List<Tradeble> tradebles;
+        readonly Uri StonksUri = new Uri("wss://fstream.binance.com/ws");
+        
+        ClientWebSocket Client;
 
-        private List<ITradeble> tradebles;
-        private readonly Uri StonksUri = new Uri("wss://fstream.binance.com/ws");
-        //wss://fstream.binance.com/ws
-        //wss://stream.binancefuture.com/ws
-        private ClientWebSocket Client;
+        CancellationTokenSource cancellationTokenSource=new CancellationTokenSource();
+        CancellationToken tokenStream;
 
         public delegate void RecievedEventHandler(Stack<MiniTicker> stream);
         public event RecievedEventHandler onMessageReceived;
 
 
-        public WebSocketManager(List<ITradeble> _tradebles)
+        public WebSocketManager(List<Tradeble> _tradebles)
         {
-            tokenCoin = cancellationTokenSource.Token;
-            tokenStream = cancellationTokenSource2.Token;
-            tradebles = _tradebles;
-            
+            tokenStream = cancellationTokenSource.Token;
+            tradebles = _tradebles;            
         }
 
         public async Task ConnectToWebSocket()
@@ -39,7 +35,7 @@ namespace ConsoleCrypto.Services
             ConsoleEx.Log("WEB SOCKET MANAGER CONNECTED");
             var a =Task.Run(()=>ReceiveStreamMessageAsync(),tokenStream);
         }
-        public async Task SubscribeCoinStreamAsync(ITradeble coin)
+        public async Task SubscribeCoinStreamAsync(Tradeble coin)
         {
             try
             {
@@ -49,7 +45,7 @@ namespace ConsoleCrypto.Services
                 request.param.Add(reqstring);
                 var stringText = JsonConvert.SerializeObject(request);
                 request = null;
-                await Client.SendAsync(Encoding.UTF8.GetBytes(stringText), WebSocketMessageType.Text, true, tokenCoin);
+                await Client.SendAsync(Encoding.UTF8.GetBytes(stringText), WebSocketMessageType.Text, true, tokenStream);
                 ConsoleEx.Log("WebSocketManager CoinAdded");
             }
             catch (Exception ex)
@@ -57,7 +53,7 @@ namespace ConsoleCrypto.Services
                 ConsoleEx.Log(ex);
             }
         }
-        public async Task UnSubscribeCoinStream(ITradeble coin)
+        public async Task UnSubscribeCoinStream(Tradeble coin)
         {
             try
             {
@@ -66,16 +62,17 @@ namespace ConsoleCrypto.Services
                 request.param.Add(coin.Name+coin.Method);
                 var stringText = JsonConvert.SerializeObject(request);
                 request=null;
-                await Client.SendAsync(Encoding.UTF8.GetBytes(stringText),WebSocketMessageType.Text,true, tokenCoin);
+                await Client.SendAsync(Encoding.UTF8.GetBytes(stringText),WebSocketMessageType.Text,true, tokenStream);
                 if (tradebles.Count == 1)
                 {
-                    cancellationTokenSource2.Cancel();
                     cancellationTokenSource.Cancel();
                     tradebles = null;
                     onMessageReceived -= WriteStreamMessage;
                     onMessageReceived = null ;
                     Client.Dispose();
                     ConsoleEx.Log("WEB SOCKET MANAGER DISPOSED");
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
                 }
                 
             }
@@ -96,7 +93,7 @@ namespace ConsoleCrypto.Services
                 var resultObject = JsonConvert.DeserializeObject<MiniTicker>(resultString);
                 if (resultObject.EventType != null)
                 {
-                    var stream = tradebles.First(x => x.Name.ToLower() == resultObject.Symbol.ToLower());
+                    var stream = tradebles.FirstOrDefault(x => x.Name.ToLower() == resultObject.Symbol.ToLower());
                     stream.tickerStreamsQueue.Push(resultObject);
                     onMessageReceived(stream.tickerStreamsQueue);
                 }
