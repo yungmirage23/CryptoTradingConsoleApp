@@ -10,10 +10,15 @@ namespace ConsoleCrypto.Models.Cryptocurrency
     {
         public string Name;
         public string Method;
-        public Coin(string name, string method) : base(name, method) { }
+        public Coin(string name, string method) : base(name, method) {
+            Name = name;
+            Method = method;
+
+        }
 
         Stack<MiniTicker> tickerQueue=new Stack<MiniTicker>();
         IEnumerable<KlineAPI> coinKlines;
+        
     }
 }
 

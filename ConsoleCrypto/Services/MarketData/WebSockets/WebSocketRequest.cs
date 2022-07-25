@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 namespace ConsoleCrypto.Services.WebSockets
 {
-    public record RequestWebSocket
+    public record WebSocketRequest
     {
         public string method = "SUBSCRIBE";
         [JsonProperty("params")]
