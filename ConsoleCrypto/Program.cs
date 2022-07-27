@@ -1,67 +1,65 @@
-﻿TradingHost host = new TradingHost();
+﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Running;
 
-await host.ReadCommand();
-//class TradingController
+using ConsoleCrypto.Services.Trading;
+using Cryptodll.Models.Cryptocurrency;
+using Cryptodll.Models.Market;
+using Cryptodll.Models.Strategy;
+
+var coin = new Coin("BTCUSDT", "@miniTicker");
+
+
+var cryptoMarket = new CryptoMarket("Binance", Market.Futures);
+var controller = new TradingController(cryptoMarket);
+
+await controller.StartReceivingCoin(coin);
+
+await controller.StartTrading(coin,new LevelsStrategy());
+
+
+
+
+
+
+
+Console.ReadLine();
+
+
+
+
+
+
+
+//public class ParalVsSimple
 //{
-//    List<ITradebl> Coens;
-//    public TradingController(List<ITradebl> _coens)
+//    Tradeble coin = new Coin("BTCUSDT", "@miniTicker");
+
+//    [Benchmark(Description ="Paralel")]
+//    public async Task TestParalelAsync()
 //    {
-//        Coens = _coens;
-//    }
-//    public void SubscribeToStreams()
-//    {
-//        foreach(var coen in Coens)
+//        var options = new ParallelOptions { MaxDegreeOfParallelism = 10 };
+//        await Parallel.ForEachAsync(coin.timeframes, options, async (tf, token) =>
 //        {
-//            ConsoleEx.Log($"{coen.Name} stream subscribed");
+//            Thread.Sleep(10);
+//            ConsoleEx.Log($"API {coin.Name} data for {tf} delivered");
+//        });
+//    }
+//    [Benchmark(Description = "Simple")]
+//    public async Task Test()
+//    {
+//      foreach(var tf in coin.timeframes)
+//        {
+//            Thread.Sleep(10);
+//            ConsoleEx.Log($"API {coin.Name} data for {tf} delivered");
 //        }
 //    }
-//}
-//interface ITradebl
-//{
-//    public string Name { get; set; }
-//    public void MakeSnapshot();
-//    public void StartStrategy();
-//}
-//class Coen:ITradebl
-//{
-//    public IStratagy Stratagy;
-//    public string Name { get; set; }
-//    public string Method { get; set; }
-//    List<KlineAPI> coens;
-//    public Coen(string _name,string _method,IStratagy _stratagy)
-//    {
-//        Name = _name;
-//        Method = _method;
-//        Stratagy = _stratagy;
-//    }
-//    public void MakeSnapshot()
-//    {
-//        ConsoleEx.Log($"Coin:{Name} Strategy:{Stratagy.Name} snapshot made");
-//    }
-//    public void StartStrategy()
-//    {
-//        Stratagy.LoadStrategy();
-//    }
 
 //}
-//interface IStratagy
+
+//public static class UnitTest
 //{
-//    public string Name { get; }
-//    public void LoadStrategy();
-//}
-//class LevelsStratagy : IStratagy
-//{
-//    public string Name{ get { return "LevelsStrategy"; } }
-//    public void LoadStrategy()
+//    public static void TestMethod1()
 //    {
-//        ConsoleEx.Log("LevelsStrategyStarted");
-//    }
-//}
-//class FastTrade : IStratagy
-//{
-//    public string Name { get { return "FastTrade"; } }
-//    public void LoadStrategy()
-//    {
-//        ConsoleEx.Log("FastStrategyStarted");
+//        BenchmarkRunner.Run<ParalVsSimple>();
 //    }
 //}
