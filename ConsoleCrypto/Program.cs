@@ -1,10 +1,10 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
-using ConsoleCrypto.Models.Cryptocurrency;
-using ConsoleCrypto.Models.Market;
-using ConsoleCrypto.Models.Strategy;
-using ConsoleCrypto.Services.API;
+
 using ConsoleCrypto.Services.Trading;
+using Cryptodll.Models.Cryptocurrency;
+using Cryptodll.Models.Market;
+using Cryptodll.Models.Strategy;
 
 var coin = new Coin("BTCUSDT", "@miniTicker");
 

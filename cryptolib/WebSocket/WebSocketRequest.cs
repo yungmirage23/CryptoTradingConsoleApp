@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-namespace ConsoleCrypto.Services.WebSockets
+namespace Cryptodll.WebSockets
 {
     public record WebSocketRequest
     {

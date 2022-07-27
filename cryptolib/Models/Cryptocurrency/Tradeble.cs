@@ -1,4 +1,6 @@
-﻿namespace ConsoleCrypto.Models.Cryptocurrency
+﻿using System.Collections.Concurrent;
+
+namespace Cryptodll.Models.Cryptocurrency
 {
     public abstract class Tradeble
     {
@@ -13,7 +15,7 @@
 
         public string[] timeframes = { "1m", "1h", "1d", "1w", "1M" };
 
-        public Dictionary<string, IEnumerable<KlineAPI>> TimeFrameKlines = new();
+        public ConcurrentDictionary<string, IEnumerable<KlineAPI>> TimeFrameKlines = new();
         public Stack<MiniTicker> tickerStreamsQueue =new Stack<MiniTicker>();
         
         public delegate void CoinReceivedHandler();

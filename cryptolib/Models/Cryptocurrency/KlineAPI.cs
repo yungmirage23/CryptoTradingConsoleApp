@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ConsoleCrypto.Models.Cryptocurrency
+namespace Cryptodll.Models.Cryptocurrency
 {
     public class KlineAPI
     {

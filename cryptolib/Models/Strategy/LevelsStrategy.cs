@@ -1,8 +1,9 @@
-﻿using ConsoleCrypto.Models.Cryptocurrency;
+﻿
+using Cryptodll.Models.Cryptocurrency;
 
-namespace ConsoleCrypto.Models.Strategy
+namespace Cryptodll.Models.Strategy
 {
-    internal class LevelsStrategy : IStrategy
+    public class LevelsStrategy : IStrategy
     {
         private struct LowHighData
         {

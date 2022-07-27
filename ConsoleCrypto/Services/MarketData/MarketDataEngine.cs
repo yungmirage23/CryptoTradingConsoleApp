@@ -1,7 +1,7 @@
-﻿using ConsoleCrypto.Models.Cryptocurrency;
-using ConsoleCrypto.Models.Market;
-using ConsoleCrypto.Services;
-using ConsoleCrypto.Services.API;
+﻿using Cryptodll.API;
+using Cryptodll.Models.Cryptocurrency;
+using Cryptodll.Models.Market;
+using Cryptodll.WebSocket.WebSockets.Manager;
 
 internal sealed class MarketDataEngine
 {
@@ -26,11 +26,14 @@ internal sealed class MarketDataEngine
             return;
         }
         await webSocketManager.SubscribeCoinStreamAsync(coin);
-        var options = new ParallelOptions { MaxDegreeOfParallelism = 10 };
-        await Parallel.ForEachAsync(coin.timeframes,options,async(tf,token)=>
+        var options = new ParallelOptions { MaxDegreeOfParallelism = 5 };
+        await Parallel.ForEachAsync(coin.timeframes, options, async (tf, token) =>
         {
             var snapshotKliens = await RequestKlinesSnapshot.RequestData(coin.Name, tf);
-            coin.TimeFrameKlines.Add(tf, snapshotKliens);
+            while (!coin.TimeFrameKlines.TryAdd(tf, snapshotKliens))
+            {
+
+            }
             ConsoleEx.Log($"API {coin.Name} data for {tf} delivered");
         });
     }

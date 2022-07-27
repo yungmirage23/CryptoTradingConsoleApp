@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleCrypto.Models.Cryptocurrency
+namespace Cryptodll.Models.Cryptocurrency
 {
     public class CandleStick
     {

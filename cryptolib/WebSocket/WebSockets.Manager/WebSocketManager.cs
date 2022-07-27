@@ -1,16 +1,15 @@
-﻿using ConsoleCrypto.Models.Cryptocurrency;
-using ConsoleCrypto.Models.Market;
-using ConsoleCrypto.Services.WebSockets;
+﻿using Cryptodll.Models.Cryptocurrency;
+using Cryptodll.Models.Market;
+using Cryptodll.WebSockets;
 using Newtonsoft.Json;
 using System.Net.WebSockets;
 using System.Text;
-using static MarketDataEngine;
 
 //wss://fstream.binance.com/ws
 //wss://stream.binancefuture.com/ws
-namespace ConsoleCrypto.Services
+namespace Cryptodll.WebSocket.WebSockets.Manager
 {
-    internal class WebSocketManager
+    public class WebSocketManager
     {
         private List<Tradeble> _tradebles;
 

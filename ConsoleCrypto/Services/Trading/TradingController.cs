@@ -1,6 +1,7 @@
-﻿using ConsoleCrypto.Models.Cryptocurrency;
-using ConsoleCrypto.Models.Market;
-using ConsoleCrypto.Models.Strategy;
+﻿
+using Cryptodll.Models.Cryptocurrency;
+using Cryptodll.Models.Market;
+using Cryptodll.Models.Strategy;
 using System;
 using System.Collections.Generic;
 using System.Linq;

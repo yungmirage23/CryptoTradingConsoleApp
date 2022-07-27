@@ -1,22 +1,15 @@
-﻿using ConsoleCrypto.Models.Cryptocurrency;
+﻿using Cryptodll.Models.Cryptocurrency;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ConsoleCrypto.Services.API
+
+namespace Cryptodll.API
 {
     public static class RequestKlinesSnapshot
     {
         public readonly static string ApiFutures = "https://fapi.binance.com";
         public readonly static string ApiTestnet = "https://testnet.binancefuture.com";
         static NumberFormatInfo nfi = new NumberFormatInfo();
-        private static IEnumerable<KlineAPI> CoinSnapshot;
         public static async Task<IEnumerable<KlineAPI>> RequestData(string symbol,string interval)
         {
             nfi.NumberDecimalSeparator = ".";

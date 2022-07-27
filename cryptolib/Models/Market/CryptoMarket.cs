@@ -1,13 +1,8 @@
-﻿using ConsoleCrypto.Models.Cryptocurrency;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Cryptodll.Models.Cryptocurrency;
 
-namespace ConsoleCrypto.Models.Market
+namespace Cryptodll.Models.Market
 {
-    internal class CryptoMarket
+    public class CryptoMarket
     {
         public string Name;
         public List<Tradeble> Tradebles=new();
