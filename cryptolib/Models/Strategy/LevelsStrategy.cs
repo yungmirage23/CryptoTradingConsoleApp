@@ -1,46 +1,113 @@
-﻿
-using Cryptodll.Models.Cryptocurrency;
+﻿using Cryptodll.Models.Cryptocurrency;
 
 namespace Cryptodll.Models.Strategy
 {
     public class LevelsStrategy : IStrategy
     {
-        private struct LowHighData
-        {
-            public string LowPrice;
-            public string HighPrice;
-        }
-
-        private float risk;
-        private Dictionary<string, LowHighData> TimeFrameMaxMin = new();
-
+        public Stack<Level> HighLevels;
+        public Stack<Level> LowLevels;
         public LevelsStrategy()
         {
         }
 
-        public void StartStrategy(Tradeble coin)
+        public void StartStrategy(Tradeble _coin)
         {
-            FindCoinHighLow(coin);
+            CreateLevels(_coin, 5);
+            //_coin.onCoinReceived +=;
         }
 
-        private void Buy(Tradeble coin)
+        private void Buy(Tradeble _coin)
         {
-            ConsoleEx.Log($"\tBought {coin.Name} on price {coin.tickerStreamsQueue.Peek().ClosePrice}");
+            ConsoleEx.Log($"\tBought {_coin.Name} on price {_coin.tickerStreamsQueue.Peek().ClosePrice}");
         }
 
-        private void Sell(Tradeble coin)
+        private void Sell(Tradeble _coin)
         {
-            ConsoleEx.Log($"\tSold {coin.Name} on price {coin.tickerStreamsQueue.Peek().ClosePrice}");
+            ConsoleEx.Log($"\tSold {_coin.Name} on price {_coin.tickerStreamsQueue.Peek().ClosePrice}");
         }
 
-        private void FindCoinHighLow(Tradeble coin)
+        private void CreateLevels(Tradeble _coin, int _coefficient)
         {
-            Parallel.ForEach(coin.TimeFrameKlines, klines =>
+            List<Level> Levels = new();
+            foreach (var pair in _coin.TimeFrameKlines)
             {
-                var maxval = klines.Value.Aggregate((i1, i2) => i1.High > i2.High ? i1 : i2);
-                var minval = klines.Value.Aggregate((i1, i2) => i1.High < i2.High ? i1 : i2);
-                ConsoleEx.Log($"{coin.Name} tf:{klines.Key} max: {maxval.High} min:{minval.Low}");
-            });
+                int weight = 1;
+                switch (pair.Key)
+                {
+                    case "1m":
+                        weight = 1;
+                        break;
+
+                    case "1h":
+                        weight = 2;
+                        break;
+
+                    case "1d":
+                        weight = 3;
+                        break;
+
+                    case "1w":
+                        weight = 4;
+                        break;
+
+                    case "1M":
+                        weight = 5;
+                        break;
+                }
+                var list = pair.Value.ToArray();
+                int current = list.Length - 1;
+
+                var klineStart = list[current];
+                float max = klineStart.High;
+                float min = klineStart.Low;
+
+                int mincounter = 0;
+                int maxcounter = 0;
+
+                while (current != 0)
+                {
+                    var curr = list[--current];
+                    var currenthigh = curr.High;
+                    var currentlow = curr.Low;
+                    Parallel.Invoke(
+                        () =>
+                    {
+                        if (currenthigh > max)
+                        {
+                            max = currenthigh;
+                            maxcounter = 0;
+                        }
+                        else maxcounter++;
+                        if (maxcounter == _coefficient)
+                        {
+                            Levels.Add(new Level(max, LevelPurpose.Resistance, weight));
+                        }
+                    },
+                        () =>
+                    {
+                        if (currentlow < min)
+                        {
+                            min = currentlow;
+                            mincounter = 0;
+                        }
+                        else mincounter++;
+                        if (mincounter == _coefficient)
+                        {
+                            Levels.Add(new Level(min, LevelPurpose.Support, weight));
+                        }
+                    });                   
+                }
+            }
+            SortLevels(Levels);
         }
+        private void SortLevels(List<Level> _levels)
+        {
+            var resistanse = _levels.Where(x => x.Purpose == LevelPurpose.Resistance).DistinctBy(x => x.Price).OrderByDescending(x=>x.Price);
+            var support = _levels.Where(x => x.Purpose == LevelPurpose.Support).DistinctBy(x =>x.Price).OrderBy(x=>x.Price);
+            HighLevels = new Stack<Level>(resistanse);
+            LowLevels = new Stack<Level>(support);
+        }
+        
     }
+
 }

@@ -12,7 +12,7 @@ internal sealed class MarketDataEngine
     {
         _market = market;
     }
-    public async Task StartCoinData(Tradeble coin)
+    public async Task StartCoinData(Tradeble _coin)
     {
         if (webSocketManager == null)
         {
@@ -21,20 +21,20 @@ internal sealed class MarketDataEngine
             await webSocketManager.ConnectToWebSocket();
             ConsoleEx.Log("Web Socket Manager started");
         }
-        if (_market.Tradebles.Contains(coin))
+        if (_market.Tradebles.Contains(_coin))
         {
             return;
         }
-        await webSocketManager.SubscribeCoinStreamAsync(coin);
+        await webSocketManager.SubscribeCoinStreamAsync(_coin);
         var options = new ParallelOptions { MaxDegreeOfParallelism = 5 };
-        await Parallel.ForEachAsync(coin.timeframes, options, async (tf, token) =>
+        await Parallel.ForEachAsync(_coin.timeframes, options, async (tf, token) =>
         {
-            var snapshotKliens = await RequestKlinesSnapshot.RequestData(coin.Name, tf);
-            while (!coin.TimeFrameKlines.TryAdd(tf, snapshotKliens))
+            var snapshotKliens = await RequestKlinesSnapshot.RequestData(_coin.Name, tf, 500);            
+            while (!_coin.TimeFrameKlines.TryAdd(tf, snapshotKliens.ToList()))
             {
 
             }
-            ConsoleEx.Log($"API {coin.Name} data for {tf} delivered");
+            ConsoleEx.Log($"API {_coin.Name} data for {tf} delivered");
         });
     }
 

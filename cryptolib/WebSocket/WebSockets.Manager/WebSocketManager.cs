@@ -56,12 +56,12 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
             var a = Task.Run(() => ReceiveStreamMessageAsync(), tokenStream);
         }
 
-        public async Task SubscribeCoinStreamAsync(Tradeble coin)
+        public async Task SubscribeCoinStreamAsync(Tradeble _coin)
         {
             try
             {
-                _tradebles.Add(coin);
-                var reqstring = coin.Name + coin.Method;
+                _tradebles.Add(_coin);
+                var reqstring = _coin.Name + _coin.Method;
                 var request = new WebSocketRequest();
                 request.param.Add(reqstring);
                 var stringText = JsonConvert.SerializeObject(request);
@@ -74,18 +74,18 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
             }
         }
 
-        public async Task UnSubscribeCoinStream(Tradeble coin)
+        public async Task UnSubscribeCoinStream(Tradeble _coin)
         {
             sem.WaitOne();
             try
             {
                 var request = new WebSocketRequest();
                 request.method = "UNSUBSCRIBE";
-                request.param.Add(coin.Name + coin.Method);
+                request.param.Add(_coin.Name + _coin.Method);
                 var stringText = JsonConvert.SerializeObject(request);
                 request = null;
                 await client.SendAsync(Encoding.UTF8.GetBytes(stringText), WebSocketMessageType.Text, true, tokenStream);
-                _tradebles.Remove(coin);
+                _tradebles.Remove(_coin);
                 if (_tradebles.Count == 0)
                 {
                     cancellationTokenSource.Cancel();
