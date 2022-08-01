@@ -1,6 +1,7 @@
 ﻿using Cryptodll.Models.Cryptocurrency;
+using Cryptodll.Models.Strategy;
 
-namespace Cryptodll.Models.Strategy
+namespace cryptolib.Models.Strategy.LevelsStrategy
 {
     public class LevelsStrategy : IStrategy
     {
@@ -18,12 +19,10 @@ namespace Cryptodll.Models.Strategy
 
         private void Buy(Tradeble _coin)
         {
-            ConsoleEx.Log($"\tBought {_coin.Name} on price {_coin.tickerStreamsQueue.Peek().ClosePrice}");
         }
 
         private void Sell(Tradeble _coin)
         {
-            ConsoleEx.Log($"\tSold {_coin.Name} on price {_coin.tickerStreamsQueue.Peek().ClosePrice}");
         }
 
         private void CreateLevels(Tradeble _coin, int _coefficient)
@@ -95,19 +94,19 @@ namespace Cryptodll.Models.Strategy
                         {
                             Levels.Add(new Level(min, LevelPurpose.Support, weight));
                         }
-                    });                   
+                    });
                 }
             }
             SortLevels(Levels);
         }
         private void SortLevels(List<Level> _levels)
         {
-            var resistanse = _levels.Where(x => x.Purpose == LevelPurpose.Resistance).DistinctBy(x => x.Price).OrderByDescending(x=>x.Price);
-            var support = _levels.Where(x => x.Purpose == LevelPurpose.Support).DistinctBy(x =>x.Price).OrderBy(x=>x.Price);
+            var resistanse = _levels.Where(x => x.Purpose == LevelPurpose.Resistance).DistinctBy(x => x.Price).OrderByDescending(x => x.Price);
+            var support = _levels.Where(x => x.Purpose == LevelPurpose.Support).DistinctBy(x => x.Price).OrderBy(x => x.Price);
             HighLevels = new Stack<Level>(resistanse);
             LowLevels = new Stack<Level>(support);
         }
-        
+
     }
 
 }

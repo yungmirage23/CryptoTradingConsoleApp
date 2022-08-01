@@ -9,11 +9,8 @@ namespace Cryptodll.Models.Cryptocurrency
     public class Coin: Tradeble
     {
         public string Name;
-        public string Method;
-        public Coin(string name, string method) : base(name, method) {
+        public Coin(string name) : base(name) {
             Name = name;
-            Method = method;
-
         }
 
         Stack<MiniTicker> tickerQueue=new Stack<MiniTicker>();

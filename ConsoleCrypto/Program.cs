@@ -1,22 +1,29 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
-
-using ConsoleCrypto.Services.Trading;
+using Cryptodll.Models;
 using Cryptodll.Models.Cryptocurrency;
-using Cryptodll.Models.Market;
-using Cryptodll.Models.Strategy;
+using Cryptodll.Models.CryptoMarket;
+using cryptolib.Models.Binance;
+Tradeble btcusdt = new Coin("btcusdt");
+Tradeble ethusdt = new Coin("ethusdt");
+Tradeble ethusdtspot = new Coin("btcusdt");
+Tradeble btcusdtspot = new Coin("ethusdt");
+CryptoMarket binance = new Binance();
+try
+{
+    await binance.ConnectToMarketAsync(MarketEnum.Futures);
+    await binance.ConnectToMarketAsync(MarketEnum.Spot);
+    binance.SubscribeToCoinDataAsync(btcusdt, MarketEnum.Futures);
+    binance.SubscribeToCoinDataAsync(btcusdtspot, MarketEnum.Spot);
+    binance.SubscribeToCoinDataAsync(ethusdt, MarketEnum.Futures);
+    binance.SubscribeToCoinDataAsync(ethusdtspot, MarketEnum.Spot);
 
-var coin = new Coin("BTCUSDT", "@miniTicker");
+}
+catch(Exception ex)
+{
+    ConsoleEx.Log(ex);
+}
 
-var cryptoMarket = new CryptoMarket("Binance", Market.Futures);
-var controller = new TradingController(cryptoMarket);
-
-await controller.StartReceivingCoin(coin);
-
-await controller.StartTrading(coin,new LevelsStrategy());
-
-
-Console.ReadLine();
 
 public static class UnitTest
 {
@@ -28,24 +35,34 @@ public static class UnitTest
 
 public class ParalVsSimple
 {
-    private Tradeble _coin = new Coin("BTCUSDT", "@miniTicker");
-    private TradingController controller;
-    private LevelsStrategy strategy = new LevelsStrategy();
-    private int _coefficient = 10;
-
     public ParalVsSimple()
     {
     }
 
-    [Benchmark(Description = "Paralel")]
+    [Benchmark(Description = "P")]
     public void FindLowHighParalel()
     {
         
     }
 
-    [Benchmark(Description = "Simple")]
+    [Benchmark(Description = "S")]
     public void FindLowHigh()
     {
 
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

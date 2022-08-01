@@ -1,4 +1,4 @@
-﻿namespace Cryptodll.Models.Strategy
+﻿namespace cryptolib.Models.Strategy.LevelsStrategy
 {
     public enum LevelPurpose
     {

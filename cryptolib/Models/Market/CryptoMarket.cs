@@ -1,22 +1,11 @@
 ﻿using Cryptodll.Models.Cryptocurrency;
 
-namespace Cryptodll.Models.Market
+namespace Cryptodll.Models.CryptoMarket
 {
-    public class CryptoMarket
+    public abstract class CryptoMarket
     {
         public string Name;
-        public List<Tradeble> Tradebles=new();
-        public CryptoMarket(string name, Market market)
-        {
-            Name = name;
-            Market = market;
-        }
-        public Market Market { get; set; }
-    }
-    public enum Market
-    {
-        Testnet,
-        Spot,
-        Futures
+        public abstract Task ConnectToMarketAsync(MarketEnum market);
+        public abstract Task SubscribeToCoinDataAsync(Tradeble coin, MarketEnum market, int apiqLimit = 500);
     }
 }
