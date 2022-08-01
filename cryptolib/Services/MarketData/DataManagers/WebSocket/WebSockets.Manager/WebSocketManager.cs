@@ -1,6 +1,4 @@
-﻿using Cryptodll.Models;
-using Cryptodll.Models.Cryptocurrency;
-
+﻿using Cryptodll.Models.Cryptocurrency;
 using Cryptodll.WebSockets;
 using Newtonsoft.Json;
 using System.Net.WebSockets;
@@ -12,11 +10,11 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
 {
     public class WebSocketManager
     {
-        List<Tradeble> _tradebles=new();
-
+        public List<Tradeble> _tradebles=new();
+        //just increment for not repeating id
         int _id;
         ClientWebSocket _client;
-
+        //semaphore which not allows to receive data to deleted list after unsubscribe from stream
         Semaphore _sem = new Semaphore(1, 1);
 
         CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
@@ -31,6 +29,7 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
             _baseUrl = baseUrl;
         }
 
+        //tries to connect to web socket
         public async Task ConnectToWebSocketAsync()
         {
             _client = new ClientWebSocket();
@@ -45,7 +44,7 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
             
             State = WebSocketState.Open;
         }
-
+        //sends to websocket serealized request as json | if it is first coin starts receive method 
         public async Task SubscribeCoinStreamAsync(Tradeble coin,string queryWebSocket)
         {
             try
@@ -68,18 +67,19 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
             }
         }
 
-        public async Task UnSubscribeCoinStreamAsync(Tradeble _coin, string tickerName)
+        // sends to websocket serealized request as json and unsubscribes from coin data | if it was last coin disposes client 
+        public async Task UnSubscribeCoinStreamAsync(Tradeble coin)
         {
             _sem.WaitOne();
             try
             {
                 var request = new WebSocketRequest();
                 request.method = "UNSUBSCRIBE";
-                request.param.Add(tickerName);
+                request.param.Add(coin.Name);
                 var stringText = JsonConvert.SerializeObject(request);
                 request = null;
                 await _client.SendAsync(Encoding.UTF8.GetBytes(stringText), WebSocketMessageType.Text, true, _tokenStream);
-                _tradebles.Remove(_coin);
+                _tradebles.Remove(coin);
                 if (_tradebles.Count == 0)
                 {
                     _cancellationTokenSource.Cancel();
@@ -94,7 +94,7 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
             }
             _sem.Release();
         }
-
+        // while cansellation is not requested async receives data from stream then serializes object 
         private async Task ReceiveStreamMessageAsync()
         {
             while (!_tokenStream.IsCancellationRequested)
@@ -105,15 +105,17 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
                     WebSocketReceiveResult result;
                     var buf = new byte[300];
                     await _client.ReceiveAsync(buf, _tokenStream);
-                    var resultString = Encoding.UTF8.GetString(buf);
-                    var resultObject = JsonConvert.DeserializeObject<MiniTicker>(resultString);
-                    if (resultObject.EventType != null)
-                    {
-                        var coin = _tradebles.FirstOrDefault(x => x.Name.ToLower() == resultObject.Symbol.ToLower());
-                        if (coin != null)
-                            coin.PushToCoinStream(resultObject);
-                    }
-                    else Console.WriteLine(resultString);
+                    await Task.Run(() => {
+                        var resultString = Encoding.UTF8.GetString(buf);
+                        var resultObject = JsonConvert.DeserializeObject<MiniTicker>(resultString);
+                        if (resultObject.EventType != null)
+                        {
+                            var coin = _tradebles.FirstOrDefault(x => x.Name.ToLower() == resultObject.Symbol.ToLower());
+                            if (coin != null)
+                                coin.PushToCoinStream(resultObject);
+                        }
+                        else Console.WriteLine(resultString);
+                    });
                 }
                 catch (TaskCanceledException ex)
                 {

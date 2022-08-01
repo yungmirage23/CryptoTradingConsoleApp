@@ -8,6 +8,7 @@ namespace cryptolib.Models.Binance
     {
         private MarketDataEngine marketDataEngine = new();
 
+        //urls for binance ws and http connections
         private readonly string SocketTestUri = "wss://testnet.binance.vision/ws";
         private readonly string SocketSpotUri = "wss://stream.binance.com:9443/ws";
         private readonly string SocketFuturesUri = "wss://fstream.binance.com/ws";
@@ -15,8 +16,11 @@ namespace cryptolib.Models.Binance
         private readonly string ApiTestnetUri = "https://testnet.binancefuture.com/fapi/v1";
         private readonly string ApiSpotUri = "https://api.binance.com/api/v3";
 
+
+        //checks possibility to connect to stonks server provides connection to market
         public override async Task ConnectToMarketAsync(MarketEnum market)
         {
+            //switch different con strings for different markets type
             switch (market)
             {
                 case MarketEnum.Spot:
@@ -33,6 +37,7 @@ namespace cryptolib.Models.Binance
             }
         }
 
+        //builds urls for api and websocket managers
         public override async Task SubscribeToCoinDataAsync(Tradeble coin, MarketEnum market, int apiqLimit = 500)
         {
             Dictionary<string, string> apiKlinesRequests = new();
@@ -43,6 +48,10 @@ namespace cryptolib.Models.Binance
             }
             var webSocketRequest = coin.Name + "@miniTicker";
             await marketDataEngine.StartCoinData(coin, apiKlinesRequests, webSocketRequest, market);
+        }
+        public override async Task UnsubscribeFromCoinDataAsync(Tradeble coin,MarketEnum market)
+        {
+            await marketDataEngine.FinishCoinData(coin,market);
         }
     }
 }

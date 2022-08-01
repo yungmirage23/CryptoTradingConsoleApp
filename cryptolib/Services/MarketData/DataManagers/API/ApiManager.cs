@@ -23,7 +23,7 @@ namespace Cryptodll.API
                     throw new Exception("Server is not responsing");
             }
         }
-
+        //makes api request to take [500-2000] last klines for each timeframe , desereilize it and save to dictionary 
         public async Task<IEnumerable<KlineAPI>> RequestKlinesAsync(string url)
         {
             nfi.NumberDecimalSeparator = ".";
