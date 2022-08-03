@@ -1,12 +1,13 @@
 ﻿using Cryptodll.Models;
 using Cryptodll.Models.Cryptocurrency;
 using Cryptodll.Models.CryptoMarket;
+using cryptolib.Services.MarketData.DataManagers;
 
 namespace cryptolib.Models.Binance
 {
     public class Binance : CryptoMarket
     {
-        private MarketDataEngine marketDataEngine = new();
+        private MarketDataEngine DataEngine=new();
 
         //urls for binance ws and http connections
         private readonly string SocketTestUri = "wss://testnet.binance.vision/ws";
@@ -24,15 +25,15 @@ namespace cryptolib.Models.Binance
             switch (market)
             {
                 case MarketEnum.Spot:
-                    await marketDataEngine.Connect(MarketEnum.Spot, SocketSpotUri, ApiSpotUri);
+                    await DataEngine.Connect(MarketEnum.Spot, SocketSpotUri, ApiSpotUri);
                     break;
 
                 case MarketEnum.Futures:
-                    await marketDataEngine.Connect(MarketEnum.Futures, SocketFuturesUri, ApiFuturesUri);
+                    await DataEngine.Connect(MarketEnum.Futures, SocketFuturesUri, ApiFuturesUri);
                     break;
 
                 case MarketEnum.Testnet:
-                    await marketDataEngine.Connect(MarketEnum.Testnet, SocketTestUri, ApiTestnetUri);
+                    await DataEngine.Connect(MarketEnum.Testnet, SocketTestUri, ApiTestnetUri);
                     break;
             }
         }
@@ -47,11 +48,11 @@ namespace cryptolib.Models.Binance
                 apiKlinesRequests.Add(tf, uri + $"&interval={tf}");
             }
             var webSocketRequest = coin.Name + "@miniTicker";
-            await marketDataEngine.StartCoinData(coin, apiKlinesRequests, webSocketRequest, market);
+            await DataEngine.StartCoinData(coin, apiKlinesRequests, webSocketRequest, market);
         }
         public override async Task UnsubscribeFromCoinDataAsync(Tradeble coin,MarketEnum market)
         {
-            await marketDataEngine.FinishCoinData(coin,market);
+            await DataEngine.FinishCoinData(coin,market);
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using Cryptodll.Models.Cryptocurrency;
 using Cryptodll.WebSockets;
 using Newtonsoft.Json;
+using System.Net;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 
@@ -10,21 +12,24 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
 {
     public class WebSocketManager
     {
-        public List<Tradeble> _tradebles=new();
+        public List<Tradeble> Tradebles;
+
+        public WebSocketState State { get { return _client.State; }}
+
         //just increment for not repeating id
-        int _id;
+
         ClientWebSocket _client;
+
         //semaphore which not allows to receive data to deleted list after unsubscribe from stream
         Semaphore _sem = new Semaphore(1, 1);
 
         CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         CancellationToken _tokenStream;
 
-        public WebSocketState State = WebSocketState.Closed;
         string _baseUrl;
+        int _id;
         public WebSocketManager(int id,string baseUrl)
         {
-            _tokenStream = _cancellationTokenSource.Token;
             _id = id;
             _baseUrl = baseUrl;
         }
@@ -32,25 +37,25 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
         //tries to connect to web socket
         public async Task ConnectToWebSocketAsync()
         {
-            _client = new ClientWebSocket();
             try
             {
+                Tradebles = new();
+               _client = new();
                await _client.ConnectAsync(new Uri(_baseUrl), _tokenStream);
+                _tokenStream = _cancellationTokenSource.Token;
             }
             catch(Exception ex)
             {
                 throw new WebSocketException("Couldn't connect to web socket");
             }
-            
-            State = WebSocketState.Open;
         }
         //sends to websocket serealized request as json | if it is first coin starts receive method 
         public async Task SubscribeCoinStreamAsync(Tradeble coin,string queryWebSocket)
         {
             try
             {
-                _tradebles.Add(coin);
-                if (_tradebles.Count() == 1)
+                Tradebles.Add(coin);
+                if (Tradebles.Count() == 1)
                 {
                     var a = Task.Run(() => ReceiveStreamMessageAsync(), _tokenStream);
                 }
@@ -77,13 +82,13 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
                 request.method = "UNSUBSCRIBE";
                 request.param.Add(coin.Name);
                 var stringText = JsonConvert.SerializeObject(request);
-                request = null;
                 await _client.SendAsync(Encoding.UTF8.GetBytes(stringText), WebSocketMessageType.Text, true, _tokenStream);
-                _tradebles.Remove(coin);
-                if (_tradebles.Count == 0)
+                Tradebles.Remove(coin);
+                if (Tradebles.Count == 0)
                 {
                     _cancellationTokenSource.Cancel();
-                    State = WebSocketState.Closed;
+                    await _client.CloseAsync(WebSocketCloseStatus.NormalClosure,"socket closed",CancellationToken.None);
+                    _client.Dispose();
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
                 }
@@ -110,7 +115,7 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
                         var resultObject = JsonConvert.DeserializeObject<MiniTicker>(resultString);
                         if (resultObject.EventType != null)
                         {
-                            var coin = _tradebles.FirstOrDefault(x => x.Name.ToLower() == resultObject.Symbol.ToLower());
+                            var coin = Tradebles.FirstOrDefault(x => x.Name.ToLower() == resultObject.Symbol.ToLower());
                             if (coin != null)
                                 coin.PushToCoinStream(resultObject);
                         }
@@ -124,7 +129,6 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
                 _sem.Release();
             }
             _client.Dispose();
-            State = WebSocketState.Closed;
         }
     }
 }

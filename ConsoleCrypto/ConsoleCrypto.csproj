@@ -10,7 +10,6 @@
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Websocket.Client" Version="4.4.43" />
   </ItemGroup>
 
   <ItemGroup>
