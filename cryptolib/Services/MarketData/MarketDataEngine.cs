@@ -4,6 +4,7 @@ using Cryptodll.Models.Cryptocurrency;
 using Cryptodll.WebSocket.WebSockets.Manager;
 using cryptolib.Services.MarketData;
 using cryptolib.Services.MarketData.DataManagers;
+using System.Globalization;
 
 internal sealed class MarketDataEngine
 {
@@ -35,7 +36,6 @@ internal sealed class MarketDataEngine
     {
         DataManagersWrapper dataManagers;
         _managersDictionary.TryGetValue(market, out dataManagers);
-
         if (dataManagers == null)
             throw new InvalidOperationException("Engine is not connected to this market or sequence contains no matching element");
         if (dataManagers.WebSocketManager.Tradebles.Contains(coin))
@@ -44,9 +44,27 @@ internal sealed class MarketDataEngine
         await dataManagers.WebSocketManager.SubscribeCoinStreamAsync(coin, webSocketRequest);
 
         var options = new ParallelOptions { MaxDegreeOfParallelism = 5 };
+       
+        NumberFormatInfo _nfi = new NumberFormatInfo();
+        _nfi.NumberDecimalSeparator = ".";
         await Parallel.ForEachAsync(apiKlinesRequest, options, async (timeframeUrl, token) =>
         {
-            var snapshotKliens = await dataManagers.ApiManager.RequestKlinesAsync(timeframeUrl.Value);
+            var snapshotKliensStrings = await dataManagers.ApiManager.GetAsync<IEnumerable<string[]>>(timeframeUrl.Value);
+            var snapshotKliens = snapshotKliensStrings.Select(item => new KlineAPI
+            {
+                OpenTime = long.Parse(item[0], _nfi),
+                Open = float.Parse(item[1], _nfi),
+                High = float.Parse(item[2], _nfi),
+                Low = float.Parse(item[3], _nfi),
+                Close = float.Parse(item[4], _nfi),
+                Volume = float.Parse(item[5], _nfi),
+                CloseTime = long.Parse(item[6]),
+                QuoteAssetVolume = float.Parse(item[7], _nfi),
+                NumberOfTrades = int.Parse(item[8]),
+                TakerBuyBaseAssetVolume = float.Parse(item[9], _nfi),
+                TakerBuyQuoteAssetVolume = float.Parse(item[10], _nfi),
+                Ignore = double.Parse(item[11]),
+            });
             while (!coin.TimeFrameKlines.TryAdd(timeframeUrl.Key, snapshotKliens.ToList()))
             {
             }
@@ -65,5 +83,13 @@ internal sealed class MarketDataEngine
             throw new NullReferenceException($"Sequense not contains coin: {coin.Name}. Unsubscribing is impossible.");
        
         await dataManagers.WebSocketManager.UnSubscribeCoinStreamAsync(coin);
+    }
+    public async Task GetAccountData(Uri uri,string endpoint,MarketEnum market)
+    {
+        DataManagersWrapper dataManagers;
+        _managersDictionary.TryGetValue(market, out dataManagers);
+        if (dataManagers == null)
+            throw new InvalidOperationException("Engine is not connected to this market or sequence contains no matching element");
+        await dataManagers.ApiManager.GetSignedAsync<IEnumerable<string[]>>(uri,endpoint);
     }
 }

@@ -16,6 +16,7 @@ namespace cryptolib.Models.Binance
         private readonly string ApiFuturesUri = "https://fapi.binance.com/fapi/v1";
         private readonly string ApiTestnetUri = "https://testnet.binancefuture.com/fapi/v1";
         private readonly string ApiSpotUri = "https://api.binance.com/api/v3";
+        Uri url = new Uri("https://api.binance.com/sapi/v1");
 
 
         //checks possibility to connect to stonks server provides connection to market
@@ -53,6 +54,11 @@ namespace cryptolib.Models.Binance
         public override async Task UnsubscribeFromCoinDataAsync(Tradeble coin,MarketEnum market)
         {
             await DataEngine.FinishCoinData(coin,market);
+        }
+
+        public override async Task AccountData()
+        {
+            await DataEngine.GetAccountData(url, "account/apiTradingStatus", MarketEnum.Spot);
         }
     }
 }
