@@ -1,5 +1,8 @@
 ﻿using Cryptodll.Models.Cryptocurrency;
 using Cryptodll.Models.Strategy;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace cryptolib.Models.Strategy.LevelsStrategy
 {
@@ -27,7 +30,7 @@ namespace cryptolib.Models.Strategy.LevelsStrategy
 
         private void CreateLevels(Tradeble _coin, int _coefficient)
         {
-            List<Level> Levels = new();
+            List<Level> Levels = new List<Level>();
             foreach (var pair in _coin.TimeFrameKlines)
             {
                 int weight = 1;
@@ -101,12 +104,27 @@ namespace cryptolib.Models.Strategy.LevelsStrategy
         }
         private void SortLevels(List<Level> _levels)
         {
-            var resistanse = _levels.Where(x => x.Purpose == LevelPurpose.Resistance).DistinctBy(x => x.Price).OrderByDescending(x => x.Price);
-            var support = _levels.Where(x => x.Purpose == LevelPurpose.Support).DistinctBy(x => x.Price).OrderBy(x => x.Price);
+            var resistanse = _levels.Where(x => x.Purpose == LevelPurpose.Resistance).Distinct(new LevelCompare()).OrderByDescending(x => x.Price);
+            var support = _levels.Where(x => x.Purpose == LevelPurpose.Support).Distinct(new LevelCompare()).OrderBy(x => x.Price);
             HighLevels = new Stack<Level>(resistanse);
             LowLevels = new Stack<Level>(support);
         }
 
+    }
+    partial class LevelCompare : IEqualityComparer<Level>
+    {
+        public bool Equals(Level x, Level y)
+        {
+            if (x.Price == y.Price)
+            {
+                return true;
+            }
+            else { return false; }
+        }
+        public int GetHashCode(Level codeh)
+        {
+            return 0;
+        }
     }
 
 }

@@ -1,13 +1,15 @@
 ﻿using Cryptodll.Models;
 using Cryptodll.Models.Cryptocurrency;
 using Cryptodll.Models.CryptoMarket;
-using cryptolib.Services.MarketData.DataManagers;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace cryptolib.Models.Binance
 {
     public class Binance : CryptoMarket
     {
-        private MarketDataEngine DataEngine=new();
+        private MarketDataEngine DataEngine=new MarketDataEngine();
 
         //urls for binance ws and http connections
         private readonly string SocketTestUri = "wss://testnet.binance.vision/ws";
@@ -42,7 +44,7 @@ namespace cryptolib.Models.Binance
         //builds urls for api and websocket managers
         public override async Task SubscribeToCoinDataAsync(Tradeble coin, MarketEnum market, int apiqLimit = 500)
         {
-            Dictionary<string, string> apiKlinesRequests = new();
+            Dictionary<string, string> apiKlinesRequests = new Dictionary<string, string>();
             string uri = $"/klines?symbol={coin.Name.ToUpper()}&limit={apiqLimit}";
             foreach (var tf in coin.timeframes)
             {

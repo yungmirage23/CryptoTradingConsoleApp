@@ -1,8 +1,12 @@
 ﻿using Cryptodll.Models.Cryptocurrency;
 using Newtonsoft.Json;
+using System;
 using System.Globalization;
+using System.IO;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Cryptodll.API
 {

@@ -1,10 +1,15 @@
 ﻿using Cryptodll.Models.Cryptocurrency;
 using Cryptodll.WebSockets;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 //wss://fstream.binance.com/ws
 //wss://stream.binancefuture.com/ws
@@ -39,8 +44,8 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
         {
             try
             {
-                Tradebles = new();
-               _client = new();
+                Tradebles = new List<Tradeble>();
+               _client = new ClientWebSocket();
                await _client.ConnectAsync(new Uri(_baseUrl), _tokenStream);
                 _tokenStream = _cancellationTokenSource.Token;
             }
@@ -63,7 +68,6 @@ namespace Cryptodll.WebSocket.WebSockets.Manager
                 request.param.Add(queryWebSocket);
                 request.id = _id;
                 var stringText = JsonConvert.SerializeObject(request);
-                request = null;
                 await _client.SendAsync(Encoding.UTF8.GetBytes(stringText), WebSocketMessageType.Text, true, _tokenStream);
             }
             catch (Exception ex)

@@ -1,4 +1,7 @@
-﻿static class ConsoleEx
+﻿using System;
+using System.Threading;
+
+static class ConsoleEx
 {
     
     public static void Log(object? message)

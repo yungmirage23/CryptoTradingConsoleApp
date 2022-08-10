@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace cryptolib.Services.MarketData.DataManagers
 {
-    public record class DataManagersWrapper
+    public class DataManagersWrapper
     {
-        public ApiManager ApiManager;
-        public WebSocketManager WebSocketManager;
+        public ApiManager ApiManager { get; set; }
+        public WebSocketManager WebSocketManager { get; set; }
         public DataManagersWrapper(ApiManager manager, WebSocketManager websmanager)
         {
             ApiManager = manager;

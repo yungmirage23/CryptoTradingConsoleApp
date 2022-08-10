@@ -4,12 +4,16 @@ using Cryptodll.Models.Cryptocurrency;
 using Cryptodll.WebSocket.WebSockets.Manager;
 using cryptolib.Services.MarketData;
 using cryptolib.Services.MarketData.DataManagers;
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
 
 internal sealed class MarketDataEngine
 {
     int _id = 0;
-    Dictionary<MarketEnum, DataManagersWrapper> _managersDictionary=new();
+    Dictionary<MarketEnum, DataManagersWrapper> _managersDictionary=new Dictionary<MarketEnum, DataManagersWrapper>();
     //connects to market (futures, spot , testnet)
     public async Task Connect(MarketEnum market, string socketUri, string apiUri)
     {
@@ -47,9 +51,9 @@ internal sealed class MarketDataEngine
        
         NumberFormatInfo _nfi = new NumberFormatInfo();
         _nfi.NumberDecimalSeparator = ".";
-        await Parallel.ForEachAsync(apiKlinesRequest, options, async (timeframeUrl, token) =>
+        Parallel.ForEach(apiKlinesRequest,async (timeframeUrl, token) =>
         {
-            var snapshotKliensStrings = await dataManagers.ApiManager.GetAsync<IEnumerable<string[]>>(timeframeUrl.Value);
+            var snapshotKliensStrings =await dataManagers.ApiManager.GetAsync<IEnumerable<string[]>>(timeframeUrl.Value);
             var snapshotKliens = snapshotKliensStrings.Select(item => new KlineAPI
             {
                 OpenTime = long.Parse(item[0], _nfi),

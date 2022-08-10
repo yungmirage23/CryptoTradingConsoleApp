@@ -4,16 +4,24 @@ using Cryptodll.Models;
 using Cryptodll.Models.Cryptocurrency;
 using Cryptodll.Models.CryptoMarket;
 using cryptolib.Models.Binance;
+using System;
+using System.Threading.Tasks;
 
-Tradeble btcusdt = new Coin("btcusdt");
-CryptoMarket binance = new Binance();
+internal class Program
+{
+    private static async Task Main(string[] args)
+    {
+        Tradeble btcusdt = new Coin("btcusdt");
+        CryptoMarket binance = new Binance();
 
-await binance.ConnectToMarketAsync(MarketEnum.Spot);
-binance.SubscribeToCoinDataAsync(btcusdt,MarketEnum.Spot);
-//await binance.AccountData();
+        await binance.ConnectToMarketAsync(MarketEnum.Spot);
+        binance.SubscribeToCoinDataAsync(btcusdt, MarketEnum.Spot);
+        //await binance.AccountData();
 
 
-Console.ReadLine();
+        Console.ReadLine();
+    }
+}
 
 public static class UnitTest
 {

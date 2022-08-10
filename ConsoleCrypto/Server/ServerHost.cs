@@ -1,5 +1,8 @@
 ﻿using ConsoleCrypto.Server.RequestParser;
+using System.IO;
 using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 
 internal partial class ServerHost
 {
@@ -30,7 +33,7 @@ internal partial class ServerHost
                     _handler.Handle(stream, request);
                 }
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 ConsoleEx.Log(ex);
             }
@@ -92,7 +95,7 @@ internal partial class ServerHost
                 await _handler.HandleAsync(stream, request);
             }
         }
-        catch (Exception ex)
+        catch (System.Exception ex)
         {
             ConsoleEx.Log(ex);
         }

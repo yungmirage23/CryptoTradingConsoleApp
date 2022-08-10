@@ -1,10 +1,10 @@
 ﻿namespace cryptolib.Models.Strategy.LevelsStrategy
 {
-    public struct Level
+    public class Level
     {
-        public float Price { get; init; }
-        public LevelPurpose Purpose { get; init; }
-        public int levelStrange { get; set; }
+        public float Price;
+        public LevelPurpose Purpose;
+        public int levelStrange;
 
         public Level(float _price, LevelPurpose _purpose, int _strangelevel)
         {

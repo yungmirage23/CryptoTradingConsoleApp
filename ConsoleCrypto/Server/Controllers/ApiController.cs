@@ -1,10 +1,21 @@
 ﻿using ConsoleCrypto.Models.Requests;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ConsoleCrypto.Controllers.Requests
 {
     public class ApiController:IController
     {
-        public record Item(string name , int value);
+        public class Item
+        {
+            string name;
+            int value;
+            public Item(string name, int value)
+            {
+                this.name = name;
+                this.value = value;
+            }
+        }
 
         public async Task<Item[]> IndexAsync()
         {

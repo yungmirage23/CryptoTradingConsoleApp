@@ -1,8 +1,18 @@
 ﻿using ConsoleCrypto.Models.Requests;
+using System.Threading.Tasks;
 
 namespace ConsoleCrypto.Controllers
 {
-    public record Item(string name, int value);
+    public class Item
+    {
+        public string name;
+        public int value;
+        public Item(string name, int value)
+        {
+            this.name = name;
+            this.value = value;
+        }
+    }
     public class WebSocketController:IController
     {
         public WebSocketController()

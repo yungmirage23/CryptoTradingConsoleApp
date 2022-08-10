@@ -1,4 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace Cryptodll.Models.Cryptocurrency
 {
@@ -14,7 +16,7 @@ namespace Cryptodll.Models.Cryptocurrency
         public string[] timeframes = { "1m", "1h", /*"1d", "1w", "1M" */};
 
         // holds data about last {limit}[500-2000] klines for every timeframe
-        public ConcurrentDictionary<string, List<KlineAPI>> TimeFrameKlines = new();
+        public ConcurrentDictionary<string, List<KlineAPI>> TimeFrameKlines = new ConcurrentDictionary<string, List<KlineAPI>>();
 
         //stack whitch receives data about last ticker price
         public Stack<MiniTicker> tickerStreamsQueue =new Stack<MiniTicker>();
